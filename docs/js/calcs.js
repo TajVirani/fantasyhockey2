@@ -1,0 +1,98 @@
+// Derived tables the report draws from (the same calcs the Dashboard version used).
+  dash.calc('weeks', {
+    inputs: ['bids'],
+    title: 'Bids per claim run',
+    description: 'Players won, money spent and team bids at each Monday claim run.',
+    fn: (bids) => {
+      const out = {};
+      for (const b of bids) {
+        const w = out[b.date] || (out[b.date] = {date: b.date, week_start: b.week_start, week_end: b.week_end, won: 0, spent: 0, team_bids: 0, players: 0});
+        w.players += 1;
+        w.team_bids += b.bidders;
+        if (b.winner != null) { w.won += 1; w.spent += b.bid; }
+      }
+      return Object.values(out).sort((a, b) => (a.date < b.date ? -1 : 1));
+    },
+  });
+
+  dash.calc('team_spend', {
+    inputs: ['bid_entries', 'bids', 'team_fp'],
+    title: 'Spending by team',
+    description: 'Per team and claim run: bids placed, total bid, money spent on bids won, players won, and the team\'s fantasy points in the scoring week that claim run fed. date "all" sums every claim run and every week played.',
+    fn: (bid_entries, bids, team_fp) => {
+      const weekOf = {};
+      for (const b of bids) weekOf[b.date] = b.week_start;
+      const fpOf = {};
+      const season = {};
+      for (const f of team_fp) {
+        fpOf[f.week_start + '|' + f.team] = f.fp;
+        season[f.team] = (season[f.team] || 0) + f.fp;
+      }
+      const out = {};
+      const add = (date, e) => {
+        const key = date + '|' + e.team;
+        const fp = date === 'all' ? season[e.team] : fpOf[weekOf[date] + '|' + e.team];
+        const r = out[key] || (out[key] = {key, date, team: e.team, fp: fp == null ? null : fp, bids: 0, bid_total: 0, spent: 0, won: 0});
+        r.bids += 1;
+        r.bid_total += e.bid;
+        if (e.result === 'Won') { r.spent += e.bid; r.won += 1; }
+      };
+      for (const e of bid_entries) { add(e.date, e); add('all', e); }
+      return Object.values(out);
+    },
+  });
+
+  dash.calc('team_weeks', {
+    inputs: ['team_fp', 'budgets'],
+    title: 'Team points and rank by week',
+    description: 'Each team\'s fantasy points and rank among teams still playing, per scoring week. Weeks after a team was eliminated are left out.',
+    fn: (team_fp, budgets) => {
+      const out = new Set(budgets.filter((b) => b.status === 'Eliminated').map((b) => b.team));
+      const weeks = {};
+      for (const f of team_fp) if (f.fp > 0) (weeks[f.week_start] = weeks[f.week_start] || []).push(f);
+      const rows = [];
+      for (const list of Object.values(weeks)) {
+        list.sort((a, b) => b.fp - a.fp);
+        list.forEach((f, i) => rows.push({key: f.key, week_start: f.week_start, week_end: f.week_end, team: f.team, fp: f.fp, rank: i + 1, of: list.length, eliminated: out.has(f.team)}));
+      }
+      return rows.sort((a, b) => (a.week_start < b.week_start ? -1 : a.week_start > b.week_start ? 1 : a.rank - b.rank));
+    },
+  });
+
+  dash.calc('faab', {
+    inputs: ['budgets'],
+    title: 'Claim budget summary',
+    description: 'Spent, lost to eliminations and left, against the $1,000 each team started with, and the teams still in that have spent nothing.',
+    fn: (budgets) => {
+      const START = 1000;
+      const sum = (k) => budgets.reduce((s, b) => s + b[k], 0);
+      const spent = sum('spent'), lost = sum('lost'), remaining = sum('remaining');
+      const start = START * budgets.length;
+      const eliminated = budgets.filter((b) => b.status === 'Eliminated').length;
+      const zero = budgets.filter((b) => b.status === 'Alive' && b.spent === 0).map((b) => b.team);
+      const pct = remaining / start;
+      return [{start, spent, lost, gone: spent + lost, remaining, pct, eliminated, zero_teams: zero.join(', '), zero_count: zero.length}];
+    },
+  });
+
+  dash.calc('top_spenders', {
+    inputs: ['budgets'],
+    title: 'Top 5 spenders',
+    description: 'The five teams that have spent the most on claims, with what each has left.',
+    fn: (budgets) => budgets.slice().sort((a, b) => b.spent - a.spent).slice(0, 5)
+      .map((b, i) => ({rank: i + 1, team: b.team, spent: b.spent, remaining: b.remaining, status: b.status})),
+  });
+
+  dash.calc('totals', {
+    inputs: ['bids'],
+    title: 'All claim runs',
+    description: 'Totals over every claim run.',
+    fn: (bids) => {
+      const won = bids.filter((b) => b.winner != null);
+      return [{
+        spent: won.reduce((s, b) => s + b.bid, 0),
+        won: won.length,
+        team_bids: bids.reduce((s, b) => s + b.bidders, 0),
+      }];
+    },
+  });

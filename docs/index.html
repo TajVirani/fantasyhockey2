@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>r/fantasyhockey #2 claim report</title>
+<meta name="description" content="Claim budget, weekly points and waiver bids for the r/fantasyhockey #2 elimination league.">
+<link rel="preload" href="fonts/BarlowCondensed-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  html, body { margin: 0; background: #F4F7FA; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  /* Official game sheet: one fixed light look, navy scoreboard over ice, blue and red rink lines. */
+  .wb {
+    color-scheme: light;
+    --wb-ink: #101C2C; --wb-muted: #55647A; --wb-ice: #F4F7FA; --wb-line: #DCE3EB; --wb-soft: #E4EAF1;
+    --wb-blue: #1B4FA8; --wb-red: #C4122F; --wb-bar: #CBD5E1; --wb-on-navy: #B7C4D4;
+    --wb-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --color-fg: var(--wb-ink); --color-fg-muted: var(--wb-muted); --color-bg: var(--wb-ice); --color-panel: #FFFFFF;
+    --color-border-line: var(--wb-line); --color-ok: #14663C; --color-bad: var(--wb-red);
+    --cds-chart-muted: var(--wb-bar); --cds-chart-grid: var(--wb-soft); --cds-chart-axis: #9AA8BA;
+    --cds-surface-popover: #FFFFFF; --cds-border: var(--wb-line); --cds-text-secondary: var(--wb-muted); --cds-font-size-caption: 14px;
+    background: var(--wb-ice); color: var(--wb-ink);
+    font-family: Barlow, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.45; font-variant-numeric: tabular-nums;
+  }
+  .wb-inner { max-width: 1240px; margin-inline: auto; padding-inline: clamp(16px, 4vw, 40px); }
+
+  .wb-board { background: var(--wb-ink); color: #FFFFFF; border-bottom: 5px solid var(--wb-red); }
+  .wb-title-row { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding-block: 44px 36px; }
+  .wb-rink { position: absolute; right: 0; top: 0; width: 420px; height: 176px; max-width: 34%; }
+  .wb-league { margin: 0; font-family: var(--wb-display); font-weight: 600; font-size: 18px; letter-spacing: .14em; text-transform: uppercase; color: var(--wb-on-navy); }
+  .wb-title { margin: 0; max-width: 62%; font-family: var(--wb-display); font-weight: 700; font-size: clamp(40px, 6vw, 68px); line-height: 1; letter-spacing: .005em; text-transform: uppercase; text-wrap: balance; }
+  .wb-through { margin: 8px 0 0; font-size: 17px; color: var(--wb-on-navy); }
+  .wb-score { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 28px 40px; padding-block: 8px 28px; }
+  .wb-cell { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .wb-cell-label { font-family: var(--wb-display); font-weight: 600; font-size: 16px; letter-spacing: .1em; text-transform: uppercase; color: var(--wb-on-navy); }
+  .wb-cell-value { font-family: var(--wb-display); font-weight: 600; font-size: 68px; line-height: 1; }
+  .wb-cell-note { font-size: 15px; color: var(--wb-on-navy); }
+  .wb-meter { display: flex; gap: 3px; height: 10px; margin-bottom: 36px; color: transparent; overflow: hidden; }
+
+  .wb-main { display: flex; flex-direction: column; gap: 72px; padding-block: 56px 88px; }
+  .wb-section { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  .wb-section-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px; padding-bottom: 10px; border-bottom: 3px solid var(--wb-blue); }
+  .wb-section-red { border-bottom-color: var(--wb-red); }
+  .wb-h2 { margin: 0; font-family: var(--wb-display); font-weight: 700; font-size: 34px; line-height: 1.1; letter-spacing: .02em; text-transform: uppercase; }
+  .wb-h3 { margin: 0; font-size: 18px; font-weight: 600; }
+  .wb-note { margin: 0; font-size: 15px; color: var(--wb-muted); }
+  .wb-lede { margin: 0; font-size: 18px; }
+  .wb .wb-lede b { font-weight: 600; }
+  .wb-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 48px; align-items: start; }
+  .wb-stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+  .wb-spender { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; column-gap: 12px; align-items: center; padding-block: 11px; border-bottom: 1px solid var(--wb-line); }
+  .wb-spender-rank { font-family: var(--wb-display); font-weight: 700; font-size: 34px; line-height: 1; color: var(--wb-blue); }
+  .wb-spender-mid { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .wb-spender-name { font-weight: 500; }
+  .wb-spender-status { font-weight: 400; font-size: 14px; color: var(--wb-muted); margin-left: 6px; }
+  .wb-spender-track { height: 6px; background: var(--wb-soft); }
+  .wb-spender-fill { height: 6px; background: var(--wb-blue); }
+  .wb-spender-right { display: flex; flex-direction: column; align-items: flex-end; }
+  .wb-spender-spent { font-family: var(--wb-display); font-weight: 600; font-size: 26px; line-height: 1.1; }
+  .wb-spender-left { font-size: 14px; color: var(--wb-muted); }
+
+  .wb-plain-scroll { overflow-x: auto; }
+  .wb-sheet { border-collapse: collapse; width: 100%; font-size: 16px; }
+  .wb-sheet th { font-family: var(--wb-display); font-size: 15px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--wb-muted); text-align: left; padding: 0 12px 8px; border-bottom: 1px solid var(--wb-ink); white-space: nowrap; }
+  .wb-sheet td { padding: 13px 12px; border-bottom: 1px solid var(--wb-line); }
+  .wb-sheet th:first-child, .wb-sheet td:first-child { padding-left: 0; }
+  .wb-sheet th:last-child, .wb-sheet td:last-child { padding-right: 0; }
+  .wb-sheet td:first-child { font-weight: 500; }
+  .wb-sheet td:nth-child(2) { color: var(--wb-muted); white-space: nowrap; }
+  .wb-sheet td:last-child { font-weight: 600; }
+  .wb-sheet .wb-num, .wb-table .wb-num { text-align: right; }
+
+  .wb-controls { display: flex; align-items: center; gap: 10px; }
+  .wb-label { font-size: 15px; color: var(--wb-muted); }
+  .wb-select { font: inherit; min-height: 44px; padding: 0 12px; border: 1px solid #B9C5D3; border-radius: 2px; background: #FFFFFF; color: var(--wb-ink); max-width: 100%; }
+  .wb-runs { display: flex; flex-wrap: wrap; gap: 4px; }
+  .wb-run { font: inherit; min-height: 44px; padding: 0 14px; border: 1px solid #B9C5D3; border-radius: 2px; background: #FFFFFF; color: var(--wb-ink); cursor: pointer; }
+  .wb-run:hover { border-color: var(--wb-ink); }
+  .wb-run[aria-pressed="true"] { font-weight: 600; border-color: var(--wb-ink); background: var(--wb-ink); color: #FFFFFF; }
+  .wb-run:focus-visible, .wb-select:focus-visible, .wb-sort:focus-visible { outline: 2px solid var(--wb-blue); outline-offset: 2px; }
+
+  .wb-chart { position: relative; min-height: 240px; }
+  .wb-chart svg { display: block; }
+  .wb-lines-box { overflow-x: auto; background: #FFFFFF; border: 1px solid var(--wb-line); }
+  .wb-lines { min-width: 760px; min-height: 640px; touch-action: pan-y; }
+  .wb-teams { min-height: 200px; }
+  .wb-tip { position: absolute; pointer-events: none; background: #FFFFFF; border: 1px solid var(--wb-line); box-shadow: 0 4px 16px rgba(16, 28, 44, .14); padding: 6px 10px; font-size: 14px; font-weight: 500; white-space: nowrap; z-index: 2; }
+  .wb-tip-sub { color: var(--wb-muted); font-weight: 400; }
+  .wb-legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px; color: var(--wb-muted); }
+  .wb-legend-item { display: inline-flex; align-items: center; gap: 7px; }
+  .wb-swatch { width: 12px; height: 12px; display: inline-block; }
+  .wb-swatch-spent { background: var(--wb-blue); }
+  .wb-swatch-bid { background: var(--wb-bar); }
+
+  .wb-scroll { overflow: auto; max-height: 34rem; background: #FFFFFF; border: 1px solid var(--wb-line); }
+  .wb-table { border-collapse: collapse; width: 100%; font-size: 15px; }
+  .wb-table th { position: sticky; top: 0; z-index: 1; padding: 0; background: var(--wb-ink); color: #FFFFFF; text-align: left; font-family: var(--wb-display); font-size: 15px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+  .wb-table th.wb-plain { padding: 11px 14px; }
+  .wb-table td { padding: 10px 14px; border-bottom: 1px solid var(--wb-soft); white-space: nowrap; }
+  .wb-sort { font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; background: none; border: 0; padding: 11px 14px; cursor: pointer; width: 100%; text-align: inherit; }
+  .wb-table th[aria-sort="ascending"] .wb-sort, .wb-table th[aria-sort="descending"] .wb-sort { text-decoration: underline; text-underline-offset: 3px; }
+  .wb-table tbody tr.wb-click { cursor: pointer; }
+  .wb-table tbody tr.wb-click:hover td { background: var(--wb-ice); }
+  .wb-table tbody tr.wb-picked td { background: #E8EFFA; font-weight: 600; }
+  .wb-muted { color: var(--wb-muted); }
+  .wb-result-won { color: var(--color-ok); font-weight: 600; }
+  .wb-result-lost { color: var(--wb-muted); }
+  .wb-pick-detail { display: flex; flex-direction: column; gap: 12px; }
+  .wb-sentence { margin: 0; color: var(--wb-muted); }
+  .wb .wb-sentence b { color: var(--wb-ink); font-weight: 600; }
+
+  .wb-exits { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 40px 56px; }
+  .wb-exit { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .wb-exit-quote { margin: 0; font-size: 22px; line-height: 1.35; font-weight: 500; text-wrap: pretty; }
+  .wb-exit-silent { font-style: italic; color: var(--wb-muted); }
+  .wb-exit-who { font-size: 15px; color: var(--wb-muted); }
+  .wb .wb-exit-who b { font-weight: 600; color: var(--wb-ink); }
+
+  .wb-fail { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: inherit; color: var(--wb-muted); font-size: 14px; }
+  .wb-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--wb-red); }
+  [data-dash-source-state=empty] { color: transparent; }
+  [data-dash-source-state=refreshing] { opacity: .5; }
+  @media (max-width: 640px) { .wb-title { max-width: 100%; } .wb-rink { display: none; } .wb-cell-value { font-size: 56px; } }
+</style>
+</head>
+<body>
+<div class="wb">
+  <header class="wb-board">
+    <div class="wb-inner">
+      <div class="wb-title-row">
+        <svg class="wb-rink" aria-hidden="true" viewBox="0 0 420 176" fill="none">
+          <line x1="50" y1="0" x2="50" y2="176" style="stroke: var(--wb-blue)" stroke-width="5" opacity="0.8"></line>
+          <line x1="370" y1="0" x2="370" y2="176" style="stroke: var(--wb-blue)" stroke-width="5" opacity="0.8"></line>
+          <line x1="210" y1="0" x2="210" y2="176" style="stroke: var(--wb-red)" stroke-width="5" opacity="0.85"></line>
+          <circle cx="210" cy="176" r="118" stroke="#FFFFFF" stroke-opacity="0.28" stroke-width="2"></circle>
+          <circle cx="210" cy="176" r="6" fill="#FFFFFF" fill-opacity="0.45"></circle>
+        </svg>
+        <p class="wb-league">r/fantasyhockey #2</p>
+        <h1 class="wb-title">Claim budget &amp; waiver report</h1>
+        <p class="wb-through">Through the <span data-draw="last-run" data-source="weeks" data-field="date">—</span> claim run</p>
+      </div>
+      <div class="wb-score">
+        <div class="wb-cell">
+          <span class="wb-cell-label">Spent on claims</span>
+          <span class="wb-cell-value" data-draw="f-spent" data-source="faab" data-field="spent" data-row="0">—</span>
+          <span class="wb-cell-note">Winning bids, every team</span>
+        </div>
+        <div class="wb-cell">
+          <span class="wb-cell-label">Lost to eliminations</span>
+          <span class="wb-cell-value" data-draw="f-lost" data-source="faab" data-field="lost" data-row="0">—</span>
+          <span class="wb-cell-note">Left behind by <span data-draw="f-elim" data-source="faab" data-field="eliminated" data-row="0">—</span> teams</span>
+        </div>
+        <div class="wb-cell">
+          <span class="wb-cell-label">Gone in total</span>
+          <span class="wb-cell-value" data-draw="f-gone" data-source="faab" data-field="gone" data-row="0">—</span>
+          <span class="wb-cell-note">Spent plus lost</span>
+        </div>
+        <div class="wb-cell">
+          <span class="wb-cell-label">Left in the league</span>
+          <span class="wb-cell-value" data-draw="f-rem" data-source="faab" data-field="remaining" data-row="0">—</span>
+          <span class="wb-cell-note"><span data-draw="f-pct" data-source="faab" data-field="pct" data-row="0">—</span> of the <span data-draw="f-start" data-source="faab" data-field="start" data-row="0">—</span> start</span>
+        </div>
+      </div>
+      <div class="wb-meter" role="img" data-draw="f-meter" data-source="faab">—</div>
+    </div>
+  </header>
+
+  <main class="wb-inner wb-main">
+    <section class="wb-section" id="budget" aria-labelledby="budget-title">
+      <div class="wb-section-head"><h2 class="wb-h2" id="budget-title">Claim budget</h2></div>
+      <div class="wb-two">
+        <div class="wb-stack">
+          <h3 class="wb-h3" id="top-spenders">Top 5 spenders</h3>
+          <div data-draw="top-list" data-source="top_spenders">—</div>
+          <p class="wb-note wb-zero-some" hidden>Teams still in that haven't spent anything: <span data-draw="f-zero" data-source="faab" data-field="zero_teams" data-row="0">—</span>.</p>
+          <p class="wb-note wb-zero-none" hidden>Every team still in has won at least one bid.</p>
+        </div>
+        <div class="wb-stack">
+          <h3 class="wb-h3" id="eliminated">Eliminated teams</h3>
+          <div class="wb-plain-scroll">
+            <table class="wb-sheet" data-source="budgets" data-row-key="team">
+              <thead>
+                <tr>
+                  <th data-field="team">Team</th>
+                  <th data-field="eliminated_on">Out</th>
+                  <th class="wb-num" data-field="spent">Spent</th>
+                  <th class="wb-num" data-field="lost">Budget lost</th>
+                </tr>
+              </thead>
+              <tbody data-draw="elim-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wb-section" id="weekly-fp" aria-labelledby="weekly-fp-title">
+      <div class="wb-section-head">
+        <h2 class="wb-h2" id="weekly-fp-title">Weekly performance</h2>
+        <div class="wb-controls">
+          <label class="wb-label" for="wb-team">Follow team</label>
+          <select class="wb-select" id="wb-team" data-draw="team-select" data-source="team_weeks"></select>
+        </div>
+      </div>
+      <p class="wb-note">Hover a line for that team's points and rank that week, or choose a team to follow.</p>
+      <div class="wb-lines-box">
+        <div class="wb-chart wb-lines" id="fp-by-week" data-draw="fp-lines" data-source="team_weeks"></div>
+      </div>
+      <p class="wb-note">Fantasy points each team scored per scoring week. A grey dashed line ends the week that team was eliminated.</p>
+    </section>
+
+    <section class="wb-section wb-page" id="bids" aria-labelledby="bids-title">
+      <div class="wb-section-head">
+        <h2 class="wb-h2" id="bids-title">Waiver bids</h2>
+        <div class="wb-runs" role="group" aria-label="Claim run" data-draw="week-buttons" data-source="weeks">—</div>
+      </div>
+      <p class="wb-lede wb-week-sentence">Scoring week <span data-draw="wk-start" data-source="weeks" data-field="week_start">—</span> to <span data-draw="wk-end" data-source="weeks" data-field="week_end">—</span>: <b><span data-draw="wk-won" data-source="weeks" data-field="won">—</span> players won for <span data-draw="wk-spent" data-source="weeks" data-field="spent">—</span></b>, from <span data-draw="wk-bids" data-source="weeks" data-field="team_bids">—</span> team bids on <span data-draw="wk-players" data-source="weeks" data-field="players">—</span> players.</p>
+      <p class="wb-lede wb-all-sentence" hidden>Every claim run: <b><span data-draw="t-won" data-source="totals" data-field="won" data-row="0">—</span> players won for <span data-draw="t-spent" data-source="totals" data-field="spent" data-row="0">—</span></b>, from <span data-draw="t-bids" data-source="totals" data-field="team_bids" data-row="0">—</span> team bids.</p>
+
+      <div class="wb-two">
+        <div class="wb-stack">
+          <h3 class="wb-h3" id="spend-chart">Spent per claim run</h3>
+          <div class="wb-chart" data-draw="spend-chart" data-source="weeks"></div>
+          <p class="wb-note">Total of winning bids at each Monday claim run. Click a bar to open that run.</p>
+        </div>
+        <div class="wb-stack">
+          <h3 class="wb-h3" id="team-chart">Spending by team</h3>
+          <div class="wb-legend">
+            <span class="wb-legend-item"><span class="wb-swatch wb-swatch-spent"></span>Money spent</span>
+            <span class="wb-legend-item"><span class="wb-swatch wb-swatch-bid"></span>Total bid</span>
+          </div>
+          <div class="wb-chart wb-teams" data-draw="team-chart" data-source="team_spend"></div>
+          <p class="wb-note">Ordered by the fantasy points each team scored in that run's scoring week (season points for all runs). A week not played yet is ordered by total bid. Teams that placed no bids aren't listed.</p>
+        </div>
+      </div>
+
+      <div class="wb-stack">
+        <h3 class="wb-h3" id="players">Players bid on</h3>
+        <div class="wb-scroll">
+          <table class="wb-table wb-week-table" data-source="bids" data-row-key="key">
+            <thead>
+              <tr>
+                <th data-field="date"><button class="wb-sort" type="button" data-col="date">Date</button></th>
+                <th data-field="player"><button class="wb-sort" type="button" data-col="player">Player</button></th>
+                <th data-field="pos"><button class="wb-sort" type="button" data-col="pos">Pos</button></th>
+                <th data-field="nhl"><button class="wb-sort" type="button" data-col="nhl">NHL</button></th>
+                <th data-field="winner"><button class="wb-sort" type="button" data-col="winner">Won by</button></th>
+                <th class="wb-num" data-field="bid"><button class="wb-sort" type="button" data-col="bid">Bid</button></th>
+                <th class="wb-num" data-field="second"><button class="wb-sort" type="button" data-col="second">2nd</button></th>
+                <th class="wb-num" data-field="overpay"><button class="wb-sort" type="button" data-col="overpay">Overpay</button></th>
+                <th class="wb-num" data-field="bidders"><button class="wb-sort" type="button" data-col="bidders">Bidders</button></th>
+                <th class="wb-num" data-field="fpg"><button class="wb-sort" type="button" data-col="fpg">FP/G</button></th>
+                <th class="wb-num" data-field="gp"><button class="wb-sort" type="button" data-col="gp">GP</button></th>
+                <th class="wb-num" data-field="ly_fpg"><button class="wb-sort" type="button" data-col="ly_fpg">LY FP/G</button></th>
+                <th class="wb-num" data-field="wk_games"><button class="wb-sort" type="button" data-col="wk_games">Wk G</button></th>
+                <th class="wb-num" data-field="proj"><button class="wb-sort" type="button" data-col="proj">Proj</button></th>
+                <th class="wb-num" data-field="per_proj"><button class="wb-sort" type="button" data-col="per_proj">$/Proj</button></th>
+                <th class="wb-num" data-field="wk_fp"><button class="wb-sort" type="button" data-col="wk_fp">Wk FP</button></th>
+              </tr>
+            </thead>
+            <tbody data-draw="week-table"></tbody>
+          </table>
+        </div>
+        <p class="wb-note">2nd is the highest losing bid that competed. Overpay is the winning bid minus 2nd. Proj is FP/G × games that week; Wk FP is what the player scored that week (finished weeks only). Click a row for every team's bid.</p>
+      </div>
+
+      <div class="wb-stack" id="player-bids">
+        <h3 class="wb-h3">Every bid on one player</h3>
+        <p class="wb-note wb-pick-empty">Click a player in the table to see every team's bid on them.</p>
+        <div class="wb-pick-detail" hidden>
+          <p class="wb-sentence"><b data-draw="pick-name" data-source="bids" data-field="player">—</b>, claim run of <b data-draw="pick-date" data-source="bids" data-field="date">—</b>. Each team is shown once, at its best bid. Voided means the bid's drop player was already used by another of that team's claims, so it never competed.</p>
+          <div class="wb-scroll">
+            <table class="wb-table" data-source="bid_entries" data-row-key="key,team">
+              <thead>
+                <tr>
+                  <th class="wb-plain" data-field="team">Team</th>
+                  <th class="wb-plain wb-num" data-field="bid">Bid</th>
+                  <th class="wb-plain" data-field="result">Result</th>
+                </tr>
+              </thead>
+              <tbody data-draw="pick-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wb-section" id="exit-interviews" aria-labelledby="exit-title">
+      <div class="wb-section-head wb-section-red"><h2 class="wb-h2" id="exit-title">Exit interviews</h2></div>
+      <div class="wb-exits">
+        <figure class="wb-exit">
+          <blockquote class="wb-exit-quote">“OH BRUH. im out first week😔. GGs lol, I think I would’ve been fine if not for injuries”</blockquote>
+          <figcaption class="wb-exit-who"><b>Papa Sidney</b>, out <span data-draw="exit-date" data-team="Papa Sidney" data-source="budgets" data-field="eliminated_on" data-where="team=Papa Sidney">—</span></figcaption>
+        </figure>
+        <figure class="wb-exit">
+          <blockquote class="wb-exit-quote">“this was an excellent waste of a month of time”</blockquote>
+          <figcaption class="wb-exit-who"><b>Moocklin Celebovine</b>, out <span data-draw="exit-date" data-team="Moocklin Celebovine" data-source="budgets" data-field="eliminated_on" data-where="team=Moocklin Celebovine">—</span></figcaption>
+        </figure>
+        <figure class="wb-exit">
+          <blockquote class="wb-exit-quote">“Was fun guys! Shoulda spent more money lol.”</blockquote>
+          <figcaption class="wb-exit-who"><b>Dreamzy</b>, out <span data-draw="exit-date" data-team="Dreamzy" data-source="budgets" data-field="eliminated_on" data-where="team=Dreamzy">—</span></figcaption>
+        </figure>
+        <figure class="wb-exit">
+          <blockquote class="wb-exit-quote">“I did have fun but it's way less fun when everyone whines about making trades with people who are facing down elimination 😂”</blockquote>
+          <figcaption class="wb-exit-who"><b>Mambo No. 5</b>, out <span data-draw="exit-date" data-team="Mambo No. 5" data-source="budgets" data-field="eliminated_on" data-where="team=Mambo No. 5">—</span></figcaption>
+        </figure>
+        <figure class="wb-exit">
+          <blockquote class="wb-exit-quote wb-exit-silent">Never said a word all league. He quietly checked out week 1.</blockquote>
+          <figcaption class="wb-exit-who"><b>Team #24</b>, out <span data-draw="exit-date" data-team="Team #24" data-source="budgets" data-field="eliminated_on" data-where="team=Team #24">—</span></figcaption>
+        </figure>
+        <figure class="wb-exit">
+          <blockquote class="wb-exit-quote">“How much did I spend this week?”</blockquote>
+          <figcaption class="wb-exit-who"><b>Zach to the Future</b>, out <span data-draw="exit-date" data-team="Zach to the Future" data-source="budgets" data-field="eliminated_on" data-where="team=Zach to the Future">—</span></figcaption>
+        </figure>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="js/dash-lite.js"></script>
+<script src="js/calcs.js"></script>
+<script src="js/report.js"></script>
+</body>
+</html>

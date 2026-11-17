@@ -1,0 +1,8 @@
+# Raw Fantrax pulls and the profile cache stay local (large, regenerated weekly)
+raw/
+cache/
+# Earlier claude.ai artifact version and its build files
+legacy/
+# Built from the Traxalytics repo by fetch.sh
+fxprobe
+__pycache__/
