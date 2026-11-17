@@ -331,6 +331,53 @@
       .on('mouseleave', () => { tip.hidden = true; });
   });
 
+  // money left by team
+  dash.draw('money-chart', (el) => {
+    const all = wb.rows('money_left');
+    if (!all) return wb.fail(el, 'money_left');
+    el.replaceChildren();
+    const rows = all.slice().sort((a, b) => b.remaining - a.remaining || (a.avg_place ?? 99) - (b.avg_place ?? 99) || a.team.localeCompare(b.team));
+    const W = Math.max(el.clientWidth, 280), rowH = 24, m = {t: 22, b: 4};
+    const H = m.t + m.b + rows.length * rowH;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Money left by team');
+    const cap = (s) => s.style('font-size', '14px').style('font-variant-numeric', 'tabular-nums');
+    const measure = (texts) => {
+      const g = cap(svg.append('g').attr('visibility', 'hidden'));
+      const widths = texts.map((s) => g.append('text').text(s).node().getComputedTextLength());
+      g.remove();
+      return d3.max(widths) || 0;
+    };
+    const place = (r) => (r.avg_place == null ? '–' : f1(r.avg_place));
+    const nameW = Math.min(measure(rows.map((r) => r.team)) + 10, W * 0.38);
+    const pw = measure(rows.map(place).concat(['Avg place'])) + 16;
+    const l = nameW + pw;
+    const rr = measure(rows.map((r) => money(r.remaining))) + 10;
+    const x = d3.scaleLinear([0, 1000], [l, Math.max(l + 40, W - rr)]);
+    const y = (i) => m.t + i * rowH;
+    const bh = 14;
+    cap(svg.append('text').attr('x', l - 8).attr('y', 14).attr('text-anchor', 'end').attr('fill', 'var(--wb-muted)').text('Avg place'));
+    cap(svg.append('text').attr('x', l).attr('y', 14).attr('fill', 'var(--wb-muted)').text('Left of $1,000'));
+    const g = svg.selectAll('g.row').data(rows).join('g').attr('class', 'row').attr('transform', (r, i) => `translate(0,${y(i)})`);
+    cap(g.append('text').attr('x', nameW - 8).attr('y', rowH / 2 + 4).attr('text-anchor', 'end').attr('fill', 'var(--wb-ink)')
+      .text((r) => r.team)).each(function () {
+        const n = this; const max = nameW - 12;
+        let s = n.textContent;
+        while (s.length > 4 && n.getComputedTextLength() > max) { s = s.slice(0, -2); n.textContent = s + '…'; }
+      });
+    cap(g.append('text').attr('x', l - 8).attr('y', rowH / 2 + 4).attr('text-anchor', 'end').attr('fill', 'var(--wb-muted)').text(place));
+    g.append('rect').attr('x', l).attr('y', (rowH - bh) / 2).attr('height', bh).attr('width', x(1000) - l).attr('fill', 'var(--wb-soft)');
+    g.append('rect').attr('x', l).attr('y', (rowH - bh) / 2).attr('height', bh).attr('width', (r) => Math.max(0, x(r.remaining) - l)).attr('fill', 'var(--wb-blue)');
+    cap(g.append('text').attr('x', x(1000) + 6).attr('y', rowH / 2 + 4).attr('fill', 'var(--wb-ink)').style('font-weight', '600').text((r) => money(r.remaining)));
+  });
+
+  for (const tab of document.querySelectorAll('.wb-tab')) {
+    tab.addEventListener('click', () => {
+      for (const t of document.querySelectorAll('.wb-tab')) t.setAttribute('aria-selected', String(t === tab));
+      for (const p of document.querySelectorAll('.wb-tab-panel')) p.hidden = p.dataset.panel !== tab.dataset.tab;
+      dash.draw(tab.dataset.tab === 'money-left' ? 'money-chart' : 'team-chart');
+    });
+  }
+
   // players table
   const cols = [
     ['date', (r) => day(parseDay(r.date))],

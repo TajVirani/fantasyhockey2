@@ -87,6 +87,11 @@
   .wb-lines-box { overflow-x: auto; background: #FFFFFF; border: 1px solid var(--wb-line); }
   .wb-lines { min-width: 760px; min-height: 640px; touch-action: pan-y; }
   .wb-teams { min-height: 200px; }
+  .wb-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--wb-line); }
+  .wb-tab { font: inherit; font-size: 15px; min-height: 44px; padding: 0 14px; background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; color: var(--wb-muted); cursor: pointer; }
+  .wb-tab[aria-selected="true"] { color: var(--wb-ink); font-weight: 600; border-bottom-color: var(--wb-blue); }
+  .wb-tab:focus-visible { outline: 2px solid var(--wb-blue); outline-offset: 2px; }
+  .wb-tab-panel { display: flex; flex-direction: column; gap: 12px; }
   .wb-tip { position: absolute; pointer-events: none; background: #FFFFFF; border: 1px solid var(--wb-line); box-shadow: 0 4px 16px rgba(16, 28, 44, .14); padding: 6px 10px; font-size: 14px; font-weight: 500; white-space: nowrap; z-index: 2; }
   .wb-tip-sub { color: var(--wb-muted); font-weight: 400; }
   .wb-legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px; color: var(--wb-muted); }
@@ -227,13 +232,23 @@
           <p class="wb-note">Total of winning bids at each Monday claim run. Click a bar to open that run.</p>
         </div>
         <div class="wb-stack">
-          <h3 class="wb-h3" id="team-chart">Spending by team</h3>
-          <div class="wb-legend">
-            <span class="wb-legend-item"><span class="wb-swatch wb-swatch-spent"></span>Money spent</span>
-            <span class="wb-legend-item"><span class="wb-swatch wb-swatch-bid"></span>Total bid</span>
+          <h3 class="wb-h3" id="team-chart">By team</h3>
+          <div class="wb-tabs" role="tablist" aria-label="By team">
+            <button class="wb-tab" type="button" role="tab" id="tab-spending" aria-controls="panel-spending" aria-selected="true" data-tab="spending">Spending</button>
+            <button class="wb-tab" type="button" role="tab" id="tab-money-left" aria-controls="panel-money-left" aria-selected="false" data-tab="money-left">Money left</button>
           </div>
-          <div class="wb-chart wb-teams" data-draw="team-chart" data-source="team_spend"></div>
-          <p class="wb-note">Ordered by the fantasy points each team scored in that run's scoring week (season points for all runs). A week not played yet is ordered by total bid. Teams that placed no bids aren't listed.</p>
+          <div class="wb-tab-panel" role="tabpanel" id="panel-spending" aria-labelledby="tab-spending" data-panel="spending">
+            <div class="wb-legend">
+              <span class="wb-legend-item"><span class="wb-swatch wb-swatch-spent"></span>Money spent</span>
+              <span class="wb-legend-item"><span class="wb-swatch wb-swatch-bid"></span>Total bid</span>
+            </div>
+            <div class="wb-chart wb-teams" data-draw="team-chart" data-source="team_spend"></div>
+            <p class="wb-note">For the claim run picked above. Ordered by the fantasy points each team scored in that run's scoring week (season points for all runs). A week not played yet is ordered by total bid. Teams that placed no bids aren't listed.</p>
+          </div>
+          <div class="wb-tab-panel" role="tabpanel" id="panel-money-left" aria-labelledby="tab-money-left" data-panel="money-left" hidden>
+            <div class="wb-chart wb-teams" data-draw="money-chart" data-source="money_left"></div>
+            <p class="wb-note">Claim budget each team still in has left, out of the $1,000 it started with, most first. Avg place is the team's average weekly finish across the last 3 scoring weeks played (1 = highest score that week).</p>
+          </div>
         </div>
       </div>
 

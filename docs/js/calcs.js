@@ -59,6 +59,19 @@
     },
   });
 
+  dash.calc('money_left', {
+    inputs: ['budgets', 'team_weeks'],
+    title: 'Money left by team',
+    description: 'Remaining claim budget for each team still in, with its average weekly finish over the last 3 scoring weeks played.',
+    fn: (budgets, team_weeks) => {
+      const last3 = Array.from(new Set(team_weeks.map((w) => w.week_start))).sort().slice(-3);
+      return budgets.filter((b) => b.status === 'Alive').map((b) => {
+        const ranks = team_weeks.filter((w) => w.team === b.team && last3.includes(w.week_start)).map((w) => w.rank);
+        return {team: b.team, remaining: b.remaining, avg_place: ranks.length ? ranks.reduce((s, r) => s + r, 0) / ranks.length : null, weeks: ranks.length};
+      });
+    },
+  });
+
   dash.calc('faab', {
     inputs: ['budgets'],
     title: 'Claim budget summary',
