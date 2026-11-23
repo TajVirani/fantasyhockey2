@@ -72,6 +72,11 @@
   .wb-sheet td:nth-child(2) { color: var(--wb-muted); white-space: nowrap; }
   .wb-sheet td:last-child { font-weight: 600; }
   .wb-sheet .wb-num, .wb-table .wb-num { text-align: right; }
+  .wb-two > * { min-width: 0; }
+  .wb-sheet.wb-compact { font-size: 14px; }
+  .wb-sheet.wb-compact th { font-size: 12px; letter-spacing: .05em; padding: 0 6px 8px; }
+  .wb-sheet.wb-compact td { padding: 9px 6px; }
+  .wb-sheet.wb-compact td.wb-num { white-space: nowrap; }
 
   .wb-controls { display: flex; align-items: center; gap: 10px; }
   .wb-label { font-size: 15px; color: var(--wb-muted); }
@@ -236,6 +241,7 @@
           <div class="wb-tabs" role="tablist" aria-label="By team">
             <button class="wb-tab" type="button" role="tab" id="tab-spending" aria-controls="panel-spending" aria-selected="true" data-tab="spending">Spending</button>
             <button class="wb-tab" type="button" role="tab" id="tab-money-left" aria-controls="panel-money-left" aria-selected="false" data-tab="money-left">Money left</button>
+            <button class="wb-tab" type="button" role="tab" id="tab-turnover" aria-controls="panel-turnover" aria-selected="false" data-tab="turnover">Turnover</button>
           </div>
           <div class="wb-tab-panel" role="tabpanel" id="panel-spending" aria-labelledby="tab-spending" data-panel="spending">
             <div class="wb-legend">
@@ -248,6 +254,25 @@
           <div class="wb-tab-panel" role="tabpanel" id="panel-money-left" aria-labelledby="tab-money-left" data-panel="money-left" hidden>
             <div class="wb-chart wb-teams" data-draw="money-chart" data-source="money_left"></div>
             <p class="wb-note">Claim budget each team still in has left, out of the $1,000 it started with, most first. Avg place is the team's average weekly finish across the last 3 scoring weeks played (1 = highest score that week).</p>
+          </div>
+          <div class="wb-tab-panel" role="tabpanel" id="panel-turnover" aria-labelledby="tab-turnover" data-panel="turnover" hidden>
+            <div class="wb-plain-scroll">
+              <table class="wb-sheet wb-compact" data-source="turnover" data-row-key="team">
+                <thead>
+                  <tr>
+                    <th data-field="team">Team</th>
+                    <th class="wb-num" data-field="per_week">Adds / wk</th>
+                    <th class="wb-num" data-field="adds">Adds</th>
+                    <th class="wb-num" data-field="bids">Won / bids</th>
+                    <th class="wb-num" data-field="avg_bid">Avg bid</th>
+                    <th class="wb-num" data-field="avg_lost">Avg losing</th>
+                    <th class="wb-num" data-field="top_bid">Top bid</th>
+                  </tr>
+                </thead>
+                <tbody data-draw="turnover-table"></tbody>
+              </table>
+            </div>
+            <p class="wb-note">Teams still in, most adds per scoring week first. Adds count every player picked up through a claim, free agents included, over the scoring weeks played so far (preseason pickups count toward week 1). Bids count once per player per scoring week, using the team's winning or highest bid. A high average losing bid means a team bids big and keeps getting beaten; a low top bid means it never went after the top players.</p>
           </div>
         </div>
       </div>
@@ -341,7 +366,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script src="js/dash-lite.js?v=13b3356009"></script>
-<script src="js/calcs.js?v=92a7a918f6"></script>
-<script src="js/report.js?v=ff258cf6bc"></script>
+<script src="js/calcs.js?v=0f1c86fb65"></script>
+<script src="js/report.js?v=daa269d4ac"></script>
 </body>
 </html>

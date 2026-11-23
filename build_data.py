@@ -65,6 +65,7 @@ for r in rows:
 bids = collections.defaultdict(list)
 scorer = {}
 spent = collections.Counter()
+adds = collections.Counter()  # players added through claims, free agents included
 drops = collections.Counter()
 for r in rows:
     c = {x["key"]: x for x in r["cells"]}
@@ -75,6 +76,8 @@ for r in rows:
     if r.get("transactionCode") != "CLAIM":
         continue
     bid = c.get("bid", {}).get("content", "")
+    if r["resultCode"] == "EXECUTED":
+        adds[team] += 1
     if r["resultCode"] == "EXECUTED" and bid:
         spent[team] += float(bid)
     if r.get("claimType") != "WW" or bid == "":
@@ -203,10 +206,12 @@ for tid, info in st.items():
     rem = float(first(f"{RAW}/ro/{tid}/*.json")["data"]["miscData"]["salaryInfo"]["info"][0]["value"])
     dumps = sorted(d for (t, d), n in drops.items() if t == name and n >= 12)
     out = rem == 0 and bool(dumps)
+    last = period_for(dumps[-1] if out else TODAY)
     budgets.append(dict(team=name, spent=spent[name], remaining=rem, status="Eliminated" if out else "Alive",
                         eliminated_on=str(dumps[-1]) if out else None,
                         lost=START_BUDGET - spent[name] if out else 0.0,
-                        traded=START_BUDGET - spent[name] - rem if not out else 0.0))
+                        traded=START_BUDGET - spent[name] - rem if not out else 0.0,
+                        adds=adds[name], periods=periods.index(last) + 1))
 
 # ---- checks
 tot_spent = sum(b["spent"] for b in budgets)
@@ -220,6 +225,7 @@ print(f"spent {tot_spent} lost {tot_lost} remaining {tot_rem} start {start} -> r
 print("won bids in bids.json", won_total, "(spent also counts FA claims with a bid)")
 print("budget trades (alive teams, nonzero):", {b["team"]: b["traded"] for b in budgets if b["traded"]})
 print("eliminated:", [(b["team"], b["eliminated_on"], b["lost"]) for b in budgets if b["status"] == "Eliminated"])
+print("adds", sum(adds.values()), "periods so far", periods.index(period_for(TODAY)) + 1)
 print("no game log:", unfetched)
 
 for n, d in dict(bids=out_bids, bid_entries=out_entries, team_fp=team_fp, budgets=budgets).items():

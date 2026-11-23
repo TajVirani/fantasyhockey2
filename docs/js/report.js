@@ -370,11 +370,32 @@
     cap(g.append('text').attr('x', x(1000) + 6).attr('y', rowH / 2 + 4).attr('fill', 'var(--wb-ink)').style('font-weight', '600').text((r) => money(r.remaining)));
   });
 
+  // roster turnover by team
+  dash.draw('turnover-table', (tbody) => {
+    const all = wb.rows('turnover');
+    if (!all) { tbody.replaceChildren(); return; }
+    const rows = all.slice().sort((a, b) => b.per_week - a.per_week || b.adds - a.adds || a.team.localeCompare(b.team));
+    const opt = (v, fmt) => (v == null ? '–' : fmt(v));
+    tbody.replaceChildren(...rows.map((r) => {
+      const tr = document.createElement('tr');
+      tr.dataset.key = r.team;
+      for (const [v, num] of [[r.team, false], [f1(r.per_week), true], [int(r.adds), true], [int(r.won) + ' / ' + int(r.bids), true],
+        [opt(r.avg_bid, money), true], [opt(r.avg_lost, money), true], [opt(r.top_bid, money), true]]) {
+        const td = document.createElement('td');
+        td.textContent = v;
+        if (num) td.className = 'wb-num';
+        tr.appendChild(td);
+      }
+      return tr;
+    }));
+  });
+
+  const TAB_DRAW = {spending: 'team-chart', 'money-left': 'money-chart', turnover: 'turnover-table'};
   for (const tab of document.querySelectorAll('.wb-tab')) {
     tab.addEventListener('click', () => {
       for (const t of document.querySelectorAll('.wb-tab')) t.setAttribute('aria-selected', String(t === tab));
       for (const p of document.querySelectorAll('.wb-tab-panel')) p.hidden = p.dataset.panel !== tab.dataset.tab;
-      dash.draw(tab.dataset.tab === 'money-left' ? 'money-chart' : 'team-chart');
+      dash.draw(TAB_DRAW[tab.dataset.tab]);
     });
   }
 

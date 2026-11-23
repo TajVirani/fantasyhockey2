@@ -72,6 +72,34 @@
     },
   });
 
+  dash.calc('turnover', {
+    inputs: ['budgets', 'bid_entries', 'bids'],
+    title: 'Roster turnover by team',
+    description: 'For each team still in: players added through claims (free agents included), in total and per scoring week, and its bids counted once per player per scoring week (the winning or highest bid).',
+    fn: (budgets, bid_entries, bids) => {
+      const weekOf = {};
+      for (const b of bids) weekOf[b.key] = b.week_start;
+      const best = {};
+      for (const e of bid_entries) {
+        const k = e.team + '|' + e.key.split('|')[1] + '|' + weekOf[e.key];
+        const cur = best[k];
+        if (!cur || (e.result === 'Won') > (cur.result === 'Won') || ((e.result === 'Won') === (cur.result === 'Won') && e.bid > cur.bid)) best[k] = e;
+      }
+      const byTeam = {};
+      for (const e of Object.values(best)) (byTeam[e.team] = byTeam[e.team] || []).push(e);
+      const avg = (xs) => (xs.length ? xs.reduce((s, x) => s + x, 0) / xs.length : null);
+      return budgets.filter((b) => b.status === 'Alive').map((b) => {
+        const es = byTeam[b.team] || [];
+        const lost = es.filter((e) => e.result !== 'Won').map((e) => e.bid);
+        return {
+          team: b.team, adds: b.adds, per_week: b.adds / b.periods, bids: es.length,
+          won: es.length - lost.length, avg_bid: avg(es.map((e) => e.bid)), avg_lost: avg(lost),
+          top_bid: es.length ? Math.max(...es.map((e) => e.bid)) : null,
+        };
+      });
+    },
+  });
+
   dash.calc('faab', {
     inputs: ['budgets'],
     title: 'Claim budget summary',
