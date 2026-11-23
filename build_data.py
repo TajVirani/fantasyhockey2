@@ -54,6 +54,8 @@ def period_for(d):
 rows = []
 for f in glob.glob(f"{RAW}/p*/*.json"):
     rows += json.load(open(f))["responses"][0]["data"]["table"]["rows"]
+# Claims processed mid-fetch shift rows onto the next page, so one row can arrive twice.
+rows = list({(r["txSetId"], r.get("transactionCode"), r["scorer"].get("scorerId")): r for r in rows}.values())
 team_of = {}
 for r in rows:
     for c in r["cells"]:
