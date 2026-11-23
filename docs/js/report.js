@@ -162,6 +162,7 @@
   dash.draw('top-list', (el) => {
     const r = wb.rows('top_spenders');
     if (!r) { el.textContent = '—'; return; }
+    const top = d3.max(r, (b) => b.avg) || 1;
     const make = (cls, text) => { const n = document.createElement('div'); n.className = cls; if (text != null) n.textContent = text; return n; };
     el.replaceChildren(...r.map((b) => {
       const row = make('wb-spender');
@@ -169,10 +170,10 @@
       if (b.status === 'Eliminated') { const st = document.createElement('span'); st.className = 'wb-spender-status'; st.textContent = 'Eliminated'; name.appendChild(st); }
       const track = make('wb-spender-track');
       const fill = make('wb-spender-fill');
-      fill.style.width = Math.min(100, b.spent / 10) + '%';
+      fill.style.width = (b.avg / top) * 100 + '%';
       track.appendChild(fill);
       const mid = make('wb-spender-mid'); mid.append(name, track);
-      const right = make('wb-spender-right'); right.append(make('wb-spender-spent', money(b.spent)), make('wb-spender-left', money(b.remaining) + ' left'));
+      const right = make('wb-spender-right'); right.append(make('wb-spender-spent', money(b.avg)), make('wb-spender-left', 'a run · ' + money(b.remaining) + ' left'));
       row.append(make('wb-spender-rank', int(b.rank)), mid, right);
       return row;
     }));

@@ -117,11 +117,16 @@
   });
 
   dash.calc('top_spenders', {
-    inputs: ['budgets'],
-    title: 'Top 5 spenders',
-    description: 'The five teams that have spent the most on claims, with what each has left.',
-    fn: (budgets) => budgets.slice().sort((a, b) => b.spent - a.spent).slice(0, 5)
-      .map((b, i) => ({rank: i + 1, team: b.team, spent: b.spent, remaining: b.remaining, status: b.status})),
+    inputs: ['budgets', 'bid_entries'],
+    title: 'Top 5 spenders, last 3 claim runs',
+    description: 'The five teams that spent the most per claim run on average over the last 3 claim runs, with what each has left.',
+    fn: (budgets, bid_entries) => {
+      const last3 = Array.from(new Set(bid_entries.map((e) => e.date))).sort().slice(-3);
+      const spent = {};
+      for (const e of bid_entries) if (e.result === 'Won' && last3.includes(e.date)) spent[e.team] = (spent[e.team] || 0) + e.bid;
+      return budgets.map((b) => ({team: b.team, avg: (spent[b.team] || 0) / last3.length, remaining: b.remaining, status: b.status}))
+        .sort((a, b) => b.avg - a.avg).slice(0, 5).map((b, i) => ({rank: i + 1, ...b}));
+    },
   });
 
   dash.calc('totals', {
